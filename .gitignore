@@ -34,8 +34,6 @@ data/
 
 # Custom scripts (may contain sensitive information)
 SignTool.sh
-check_2fa.sh
-debug_2fa.sh
 
 # Log files
 *.log
