@@ -1,5 +1,6 @@
 # Binaries and executables
 SignTools
+SignTools.app
 *.exe
 *.exe~
 *.dll

@@ -38,6 +38,34 @@ gem install fastlane
 
 ### 1. Build the Project
 
+#### Option A: Build .app Bundle (Recommended)
+
+```bash
+cd LocalSignTools
+
+# Download dependencies
+go mod download
+
+# Build .app bundle (includes building the executable)
+./build_app.sh
+```
+
+This will create `SignTools.app` which can be double-clicked to launch.
+
+**Note:** You only need to run `build_app.sh` when:
+- You modify the source code (`main.go` or files in `src/`)
+- You update dependencies (`go.mod`)
+- You change the `.app` bundle structure or wrapper script
+
+You do **NOT** need to rebuild when:
+- Adding or modifying files in the `data/` folder (profiles, apps, uploads)
+- Changing the `signer-cfg.yml` configuration file
+- Modifying files in the `builder/` directory
+
+The `data/` folder contents are loaded at runtime, so changes take effect immediately when you restart the application.
+
+#### Option B: Build Executable Only
+
 ```bash
 cd LocalSignTools
 
@@ -101,7 +129,21 @@ chmod 600 data/profiles/*/account_pass.txt
 
 ## Usage
 
-### Start the Service
+### Method 1: Using .app Bundle (Recommended for Double-Click Launch)
+
+1. Build the .app bundle:
+```bash
+./build_app.sh
+```
+
+2. Double-click `SignTools.app` in Finder, or run:
+```bash
+open SignTools.app
+```
+
+The application will launch in a Terminal window. The web interface will be available at `http://localhost:8080` (or a random port if 8080 is in use).
+
+### Method 2: Direct Command Line Execution
 
 ```bash
 ./SignTools
@@ -185,7 +227,9 @@ If the default port (8080) is in use, a random port will be automatically assign
 
 ```
 LocalSignTools/
-├── SignTools                 # Main executable
+├── SignTools                 # Main executable (built)
+├── SignTools.app            # macOS .app bundle (built)
+├── build_app.sh             # Script to build .app bundle
 ├── signer-cfg.yml           # Configuration file
 ├── data/                    # Data directory
 │   ├── apps/               # Uploaded applications
