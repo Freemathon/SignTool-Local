@@ -9,10 +9,12 @@ LocalSignTools is a streamlined local execution version of SignTools that includ
 ## Features
 
 - **Integrated Builder**: Signing operations run internally (no separate server required)
+- **Headless CLI Mode**: Complete command-line interface for signing operations without starting a web server
 - **Simple Configuration**: Only the integrated version is included, keeping the codebase clean
 - **Automatic Port Management**: Automatically uses a random port if the default port is in use
 - **Automatic Cleanup**: Automatically removes old upload files
 - **2FA Support**: Supports Apple Developer Account two-factor authentication
+- **Custom Provisioning Profiles**: Support for both developer account and custom provisioning profile modes
 - **Web Interface**: Easy-to-use browser-based interface
 
 ## Requirements
@@ -461,12 +463,6 @@ We would like to express our gratitude to the original SignTools project and its
 - **Custom Provisioning Profile Support**: Full support for custom provisioning profiles in CLI mode
 - **Improved Error Handling**: Better error messages for App ID registration and provisioning profile operations
 - **Reduced Log Noise**: 2FA-related log messages are now displayed only once per operation
-
-### Code Quality
-
-- **Refactoring**: Eliminated code duplication (e.g., `setBuilderSecrets` function)
-- **Better Organization**: Clearer separation of concerns between server mode and CLI mode
-- **Improved Documentation**: Enhanced README with detailed usage examples
 
 ### Developer Tools
 
