@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# LocalSignTools .appバンドルビルドスクリプト
+# LocalSignTools .app bundle build script
 
 set -e
 
@@ -10,37 +10,37 @@ APP_BUNDLE="$SCRIPT_DIR/${APP_NAME}.app"
 EXECUTABLE="$SCRIPT_DIR/$APP_NAME"
 APP_EXECUTABLE="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
-# 色の定義
+# Color definitions
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}=== LocalSignTools .appバンドルビルド ===${NC}"
+echo -e "${GREEN}=== LocalSignTools .app Bundle Build ===${NC}"
 echo ""
 
-# Goのビルド
-echo -e "${YELLOW}Goアプリケーションをビルド中...${NC}"
+# Build Go application
+echo -e "${YELLOW}Building Go application...${NC}"
 cd "$SCRIPT_DIR" || exit 1
 go build -o "$APP_NAME" || exit 1
-echo -e "${GREEN}✓ ビルド完了${NC}"
+echo -e "${GREEN}✓ Build complete${NC}"
 echo ""
 
-# .appバンドルのディレクトリ構造を作成
-echo -e "${YELLOW}.appバンドル構造を作成中...${NC}"
+# Create .app bundle directory structure
+echo -e "${YELLOW}Creating .app bundle structure...${NC}"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
-echo -e "${GREEN}✓ ディレクトリ構造作成完了${NC}"
+echo -e "${GREEN}✓ Directory structure created${NC}"
 echo ""
 
-# 実行可能ファイルを.appバンドルにコピー
-echo -e "${YELLOW}実行可能ファイルを.appバンドルにコピー中...${NC}"
+# Copy executable to .app bundle
+echo -e "${YELLOW}Copying executable to .app bundle...${NC}"
 cp "$EXECUTABLE" "${APP_EXECUTABLE}.bin"
 chmod +x "${APP_EXECUTABLE}.bin"
-echo -e "${GREEN}✓ コピー完了${NC}"
+echo -e "${GREEN}✓ Copy complete${NC}"
 echo ""
 
-# Info.plistを作成
-echo -e "${YELLOW}Info.plistを作成中...${NC}"
+# Create Info.plist
+echo -e "${YELLOW}Creating Info.plist...${NC}"
 cat > "$APP_BUNDLE/Contents/Info.plist" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -69,44 +69,44 @@ cat > "$APP_BUNDLE/Contents/Info.plist" <<'EOF'
 </dict>
 </plist>
 EOF
-echo -e "${GREEN}✓ Info.plist作成完了${NC}"
+echo -e "${GREEN}✓ Info.plist created${NC}"
 echo ""
 
-# ラッパースクリプトを作成（引数を渡せるように修正）
-echo -e "${YELLOW}ラッパースクリプトを作成中...${NC}"
+# Create wrapper script (modified to pass command-line arguments)
+echo -e "${YELLOW}Creating wrapper script...${NC}"
 cat > "$APP_EXECUTABLE" <<'WRAPPER_EOF'
 #!/bin/bash
 
-# LocalSignTools ラッパースクリプト
-# .appバンドルから実行された場合、作業ディレクトリをプロジェクトルートに設定
-# コマンドライン引数も渡せるように修正
+# LocalSignTools wrapper script
+# Sets working directory to project root when executed from .app bundle
+# Modified to pass command-line arguments
 
-# .appバンドルの場所を取得
+# Get .app bundle location
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PROJECT_ROOT="$(dirname "$APP_DIR")"
 
-# プロジェクトルートに移動
+# Change to project root
 cd "$PROJECT_ROOT" || exit 1
 
-# 実際の実行可能ファイルのパス（.appバンドル内のバイナリ）
+# Actual executable path (binary inside .app bundle)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ACTUAL_EXECUTABLE="$SCRIPT_DIR/SignTools.bin"
 
-# 実行可能ファイルが存在するか確認
+# Check if executable exists
 if [ ! -f "$ACTUAL_EXECUTABLE" ]; then
-    osascript -e 'display dialog "SignTools.binが見つかりません。\n\nbuild_app.shを実行して.appバンドルを再構築してください。" buttons {"OK"} default button "OK" with icon stop'
+    osascript -e 'display dialog "SignTools.bin not found.\n\nPlease run build_app.sh to rebuild the .app bundle." buttons {"OK"} default button "OK" with icon stop'
     exit 1
 fi
 
-# すべての引数を取得
+# Get all arguments
 ARGS="$@"
 
-# headlessモード（CLIモード）の場合は、ターミナルを開かずに直接実行
+# If headless mode (CLI mode), run directly without opening terminal
 if [[ "$ARGS" == *"-headless"* ]]; then
-    # CLIモード: 直接実行（標準出力に出力）
+    # CLI mode: run directly (output to stdout)
     exec "$ACTUAL_EXECUTABLE" $ARGS
 else
-    # 通常モード: ターミナルウィンドウを開いて実行
+    # Normal mode: open terminal window and run
     osascript <<EOF
 tell application "Terminal"
     activate
@@ -117,19 +117,19 @@ fi
 WRAPPER_EOF
 
 chmod +x "$APP_EXECUTABLE"
-echo -e "${GREEN}✓ ラッパースクリプト作成完了${NC}"
+echo -e "${GREEN}✓ Wrapper script created${NC}"
 echo ""
 
-echo -e "${GREEN}=== ビルド完了 ===${NC}"
+echo -e "${GREEN}=== Build Complete ===${NC}"
 echo ""
-echo "以下の方法で実行できます："
+echo "You can run the application using:"
 echo ""
-echo "1. ダブルクリック（通常モード）:"
-echo "   Finderで ${APP_NAME}.app をダブルクリック"
+echo "1. Double-click (Normal mode):"
+echo "   Double-click ${APP_NAME}.app in Finder"
 echo ""
-echo "2. CLIモード（引数付き）:"
+echo "2. CLI mode (with arguments):"
 echo "   SignTools.app/Contents/MacOS/SignTools -headless -ipa app.ipa -profile profile_name -output signed.ipa"
 echo ""
-echo "3. 直接実行可能ファイル（推奨）:"
+echo "3. Direct executable (Recommended):"
 echo "   SignTools.app/Contents/MacOS/SignTools.bin -headless -ipa app.ipa -profile profile_name -output signed.ipa"
 echo ""
