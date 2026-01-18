@@ -1,0 +1,12 @@
+{
+  "watch_folder": "~/Desktop/WatchFolder",
+  "output_folder": "~/Desktop/Signed",
+  "profile": "developer_account",
+  "sign_args": "-a -d -e",
+  "bundle_id": null,
+  "processed_folder": "~/Desktop/Processed",
+  "failed_folder": "~/Desktop/Failed",
+  "log_file": "~/Desktop/watch_folder.log",
+  "poll_interval": 2.0,
+  "sign_tools_path": null
+}

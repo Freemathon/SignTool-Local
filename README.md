@@ -10,6 +10,7 @@ LocalSignTools is a streamlined local execution version of SignTools that includ
 
 - **Integrated Builder**: Signing operations run internally (no separate server required)
 - **Headless CLI Mode**: Complete command-line interface for signing operations without starting a web server
+- **Watch Folder Mode**: Automatically sign IPA files when they are added to a watch folder
 - **Simple Configuration**: Only the integrated version is included, keeping the codebase clean
 - **Automatic Port Management**: Automatically uses a random port if the default port is in use
 - **Automatic Cleanup**: Automatically removes old upload files
@@ -273,6 +274,91 @@ When 2FA is required in CLI mode:
 - `0`: Signing completed successfully
 - Non-zero: Signing failed (check error messages)
 
+### Method 4: Watch Folder Mode (Automated Signing)
+
+Automatically sign IPA files when they are added to a watch folder using the `watch_folder.py` script:
+
+```bash
+# Basic usage
+python3 watch_folder.py \
+  -w ~/Desktop/WatchFolder \
+  -o ~/Desktop/Signed \
+  -p developer_account
+
+# With signing arguments
+python3 watch_folder.py \
+  -w ~/Desktop/WatchFolder \
+  -o ~/Desktop/Signed \
+  -p developer_account \
+  -a "-a -d" \
+  --processed-folder ~/Desktop/Processed \
+  --failed-folder ~/Desktop/Failed \
+  -l ~/Desktop/watch.log
+```
+
+**Watch Folder Options:**
+- `-w, --watch-folder`: Folder to watch for IPA files (required)
+- `-o, --output-folder`: Folder to save signed IPA files (required)
+- `-p, --profile`: Profile name from `data/profiles/` (required)
+- `-a, --args`: Signing arguments (e.g., `-a -d -m`)
+- `-b, --bundle-id`: Custom bundle ID (optional)
+- `--processed-folder`: Folder to move processed IPA files (optional, files are deleted if not specified)
+- `--failed-folder`: Folder to move failed IPA files (optional)
+- `-l, --log-file`: Log file path (optional)
+- `-i, --poll-interval`: Polling interval in seconds (default: 2.0)
+- `-c, --config`: Configuration file (JSON format)
+- `--sign-tools-path`: Path to SignTools executable (optional, auto-detected if not specified)
+
+**SignTools Path Detection:**
+
+The script automatically searches for the SignTools executable in the following order:
+1. Explicitly specified path (from `--sign-tools-path` argument or config file)
+2. `SIGNTOOLS_PATH` environment variable
+3. Script directory (same directory as `watch_folder.py`)
+4. Parent directory (project root)
+5. Project root (detected by presence of `signer-cfg.yml` or `go.mod`)
+6. `PATH` environment variable
+7. Current working directory
+
+If SignTools is not found, the script will display a detailed error message with instructions on how to specify the path.
+
+**Using Configuration File:**
+
+Create a configuration file `watch_config.json`:
+
+```json
+{
+  "watch_folder": "~/Desktop/WatchFolder",
+  "output_folder": "~/Desktop/Signed",
+  "profile": "developer_account",
+  "sign_args": "-a -d",
+  "bundle_id": null,
+  "processed_folder": "~/Desktop/Processed",
+  "failed_folder": "~/Desktop/Failed",
+  "log_file": "~/Desktop/watch_folder.log",
+  "poll_interval": 2.0,
+  "sign_tools_path": null
+}
+```
+
+Then run:
+
+```bash
+python3 watch_folder.py -c watch_config.json
+```
+
+**How It Works:**
+1. The script continuously monitors the watch folder for new `.ipa` files
+2. When a new IPA file is detected and stable (no longer being written), it automatically signs it
+3. The signed IPA is saved to the output folder with `_signed` suffix
+4. Processed files are moved to the processed folder (or deleted if not specified)
+5. Failed files are moved to the failed folder (if specified)
+6. All operations are logged to console and optionally to a log file
+
+**Note:** The script uses polling (checks every 2 seconds by default) to detect new files. Make sure the IPA file transfer is complete before processing begins. The script waits for files to stabilize (stop changing size) before processing.
+
+**To stop the watch folder script, press Ctrl+C.**
+
 ## Two-Factor Authentication (2FA)
 
 When 2FA is enabled on your Apple Developer Account, you will be prompted to enter a 2FA code during signing.
@@ -367,6 +453,8 @@ LocalSignTools/
 ├── SignTools                 # Main executable (built)
 ├── SignTools.app            # macOS .app bundle (built)
 ├── build_app.sh             # Script to build .app bundle
+├── watch_folder.py          # Watch folder script for automated signing
+├── watch_config.example.json # Example configuration for watch folder
 ├── debug_2fa.sh             # 2FA debugging script
 ├── check_2fa.sh             # 2FA troubleshooting script
 ├── signer-cfg.yml           # Configuration file
@@ -466,6 +554,7 @@ We would like to express our gratitude to the original SignTools project and its
 
 ### Developer Tools
 
+- **Watch Folder Script**: Added `watch_folder.py` for automated signing when IPA files are added to a watch folder
 - **Debug Scripts**: Added `debug_2fa.sh` and `check_2fa.sh` for troubleshooting 2FA issues
 - **App Bundle Support**: CLI mode works seamlessly from the `.app` bundle
 
