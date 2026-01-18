@@ -718,35 +718,10 @@ func uploadUnsignedApp(c echo.Context) error {
 		return errors.Errorf("no app upload file with id %s", fileId)
 	}
 
-	signArgs := ""
-	if c.FormValue(formNames.FormAllDevices) != "" {
-		signArgs += " -a"
-	}
-	if c.FormValue(formNames.FormMac) != "" {
-		signArgs += " -m"
-	}
-	if c.FormValue(formNames.FormAppDebug) != "" {
-		signArgs += " -d"
-	}
-	if c.FormValue(formNames.FormFileShare) != "" {
-		signArgs += " -s"
-	}
-	if c.FormValue(formNames.FormIdEncode) != "" {
-		signArgs += " -e"
-	}
-	if c.FormValue(formNames.FormIdForceOriginal) != "" {
-		signArgs += " -o"
-	}
-	if c.FormValue(formNames.FormIdPatch) != "" {
-		signArgs += " -p"
-	}
+	// Build signing arguments from form values
 	idType := c.FormValue(formNames.FormId)
 	userBundleId := c.FormValue(formNames.FormIdCustomText)
-	if idType == formNames.FormIdProv {
-		signArgs += " -n"
-	} else if idType == formNames.FormIdCustom {
-		signArgs += " -b " + userBundleId
-	}
+	signArgs := buildSignArgs(c, idType, userBundleId)
 	bundleName := c.FormValue(formNames.FormBundleName)
 	if bundleName != "" {
 		fileName = fmt.Sprintf("%s (%s)%s",
@@ -807,6 +782,38 @@ func resignApp(c echo.Context, app storage.App) error {
 		return err
 	}
 	return c.Redirect(302, "/")
+}
+
+// buildSignArgs constructs signing arguments from form values
+func buildSignArgs(c echo.Context, idType, userBundleId string) string {
+	var signArgs strings.Builder
+	if c.FormValue(formNames.FormAllDevices) != "" {
+		signArgs.WriteString(" -a")
+	}
+	if c.FormValue(formNames.FormMac) != "" {
+		signArgs.WriteString(" -m")
+	}
+	if c.FormValue(formNames.FormAppDebug) != "" {
+		signArgs.WriteString(" -d")
+	}
+	if c.FormValue(formNames.FormFileShare) != "" {
+		signArgs.WriteString(" -s")
+	}
+	if c.FormValue(formNames.FormIdEncode) != "" {
+		signArgs.WriteString(" -e")
+	}
+	if c.FormValue(formNames.FormIdForceOriginal) != "" {
+		signArgs.WriteString(" -o")
+	}
+	if c.FormValue(formNames.FormIdPatch) != "" {
+		signArgs.WriteString(" -p")
+	}
+	if idType == formNames.FormIdProv {
+		signArgs.WriteString(" -n")
+	} else if idType == formNames.FormIdCustom {
+		signArgs.WriteString(" -b " + userBundleId)
+	}
+	return signArgs.String()
 }
 
 // startSign initiates the signing process for an app
